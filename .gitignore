@@ -162,3 +162,7 @@ Temporary Items
 # mypy
 # Pyre type checker
 # End of https://www.gitignore.io/api/linux,macos,django,python
+
+# Environments
+.venv
+venv/
