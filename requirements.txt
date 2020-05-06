@@ -1,3 +1,4 @@
 django
-pipenv
 flake8
+mysqlclient
+pipenv

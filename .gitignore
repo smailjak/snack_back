@@ -238,3 +238,6 @@ pip-selfcheck.json
 .history
 
 # End of https://www.gitignore.io/api/venv,linux,macos,django,direnv,python,visualstudiocode
+
+# settings
+my_settings.py
