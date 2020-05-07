@@ -1,33 +1,42 @@
 import json
+
 from django.views import View
-from django.http import JsonResponse
+from django.http import HttpResponse, JsonResponse
+
 from .models import Account
 
 
 class SignUpView(View):
     def post(self, request):
         data = json.loads(request.body)
-        print(request)
-        print(request.body)
-        Account(
-            name = data['name'],
-            user_id = data['user_id'],
-            password = data['password'],
-            email = data['email'],
-            phone = data['phone']
-        ).save()
+        try:
+            if Account.objects.filter(user_id = data['user_id']).exists():  # 존재하는 유저아이디인지 확인
+                return HttpResponse(status=400)
 
-        return JsonResponse({'message': '회원가입 완료'}, status=200)
+            Account(
+                name = data['name'],
+                user_id = data['user_id'],
+                password = data['password'],
+                email = data['email'],
+                phone = data['phone']
+            ).save()
+
+            return HttpResponse(status=200) # 회원가입 완료
+        except KeyError:
+            return JsonResponse({'message': 'INVALID_KEY'}, status = 400)
 
 
 class SignInView(View):
     def post(self, request):
         data = json.loads(request.body)
 
-        if Account.objects.filter(user_id = data['user_id']).exists():
-            user = Account.objects.get(user_id = data['user_id'])
-            if user.password == data['password']:
-                return JsonResponse({'message': f'{user.user_id}님 로그인 성공!'}, status=200)
-            else:
-                return JsonResponse({'message': '비밀번호가 틀렸어요'}, status=200)
-        return JsonResponse({'message': '등록되지 않은 이메일 입니다.'}, status=200)
+        try:
+            if Account.objects.filter(user_id = data['user_id']).exists(): # 존재하는 아이디이면
+                user = Account.objects.get(user_id = data['user_id'])
+
+                if user.password == data['password']:
+                    return HttpResponse(status=200)
+                return HttpResponse(status=401)
+            return HttpResponse(status=400)
+        except KeyError: # 존재하지 않는 아이디여서 keyerror 나면
+            return JsonResponse({'message': 'INVALID_KEYS'}, status=400)
