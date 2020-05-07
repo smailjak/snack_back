@@ -67,7 +67,7 @@ class SearchView(View):
             if len(keyword) > 0:
                 product_data = (Product.
                                 objects.
-                                filter(Q(name = keyword)).
+                                filter(name = keyword).
                                 values())
 
                 return JsonResponse({"data" : product_data},status=200)
