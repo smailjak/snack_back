@@ -69,5 +69,20 @@ class ReviewDetailView(View):
             return JsonResponse({"message":"INVALID_KEYS"} , status=400)
 
     @login_check
-    def delete(self,request):
-        return
+    def delete(self,request , product_id , review_id):
+
+        try:
+
+            review_data = Review.objects.get(id         = review_id ,
+                                             product_id = product_id ,
+                                             user_id    = request.account.id)
+
+            review_data.delete()
+
+            return HttpResponse(status=200)
+
+        except Account.DoesNotExist :
+            return JsonResponse({"message":"DOESNOT_ACCOUNT"} , status=400)
+
+        except KeyError:
+            return JsonResponse({"message" : "INVALID_KEYS"},status=400)
