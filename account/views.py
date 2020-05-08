@@ -1,7 +1,8 @@
-import json
 import bcrypt
 import jwt
 import requests
+
+import json
 
 
 from django.views           import View
