@@ -1,6 +1,6 @@
 from django.db      import models
-from account.models import *
-from product.models import *
+from account.models import Account
+from product.models import Product
 
 
 # Create your models here.

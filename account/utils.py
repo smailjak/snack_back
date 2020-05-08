@@ -14,8 +14,8 @@ def login_check(func):
                                       SECRET_KEY['secret'],
                                       algorithms = ALGORITHM)
 
-            user         = User.objects.get(id = payload["id"])
-            request.user = user
+            account         = User.objects.get(id = payload["id"])
+            request.user = account
 
             return func(self, request, *args, **kwargs)
 
