@@ -1,4 +1,3 @@
-import bcrypt
 import jwt
 import requests
 
@@ -70,8 +69,8 @@ class ProfileView(View):
 
         try :
             if Account.objects.filter(user_id = account.user_id):
-                if bcrypt.checkpw(data['password'].encode('utf-8') ,
-                                  account.password.encode('utf-8')):
+
+                if account.password == data['password']:
 
                     account.update(
                         name    = data['name'],
