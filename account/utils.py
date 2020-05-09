@@ -1,8 +1,8 @@
 import jwt
 
-from .models                    import Account
+from .models                import Account
 from snack_back.my_settings import ALGORITHM, SECRET_KEY
-from django.http                import JsonResponse
+from django.http            import JsonResponse
 
 
 def login_check(func):
@@ -14,7 +14,7 @@ def login_check(func):
                                       SECRET_KEY['secret'],
                                       algorithms = ALGORITHM)
 
-            account         = User.objects.get(id = payload["id"])
+            account      = User.objects.get(id = payload["id"])
             request.user = account
 
             return func(self, request, *args, **kwargs)
