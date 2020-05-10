@@ -8,6 +8,7 @@ from .models     import (Category,
 class CategoryViewTest(TestCase):
 
     def setUp(self):
+        client = Client()
         Category.objects.bulk_create([
             Category(id=1 , name="과자"),
             Category(id=2 , name="음료"),
@@ -69,11 +70,6 @@ class ProductViewTest(TestCase):
             category = Category.objects.get(id=1),
             product  = Product.objects.get(id=1),
         )
-
-    def tearDown(self):
-        Category.objects.all().delete()
-        Product.objects.all().delete()
-        CategoryProduct.objects.all().delete()
 
     def test_get_product(self):
         client     = Client()

@@ -1,4 +1,8 @@
+bcrypt
 django
+django-cors-headers
 flake8
 mysqlclient
 pipenv
+pyjwt
+requests
