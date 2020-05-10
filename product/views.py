@@ -24,28 +24,39 @@ class ProductView(View):
 
             product_info = (Product.
                             objects.
-                            filter(name__icontains = category_name).
+                            filter(category__name__icontains = category_name).
                             order_by(sort_by).
-                            values()[offset:offset+limit])
+                            values("id",
+                                   "image",
+                                   "name",
+                                   "price",
+                                   "retail_price")[offset:offset+limit])
 
             return JsonResponse({"data":list(product_info)} , status=200)
 
         except ValueError:
-            return JsonResponse({"MESSAGE":"VALUDE_ERROR"} , status=400)
+            return JsonResponse({"message":"VALUDE_ERROR"} , status=400)
 
         except TypeError:
-            return JsonResponse({"MESSAGE":"INVALID_TYPE"} , status=400)
+            return JsonResponse({"message":"INVALID_TYPE"} , status=400)
 
 class ProductDetailView(View):
     def get(self , request , product_id):
 
         try:
-            data = (Product.
-                    object.
-                    filter(id = product_id).
-                    values())
 
-            return JsonResponse({"data" : list(data)} , status=200)
+            product_info =(Product.
+                           objects.
+                           filter(id=product_id).
+                           values("id",
+                                 "name",
+                                 "image",
+                                 "price",
+                                 "retail_price",
+                                 "ingredient_image",
+                                 "stock"))
+
+            return JsonResponse({"data" : list(product_info)} , status=200)
 
         except TypeError:
             return JsonResponse({"MESSAGE" : "INVALID_TYPE"} , status=400)
