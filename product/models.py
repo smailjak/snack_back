@@ -20,7 +20,7 @@ class Product(models.Model):
     price            = models.CharField(max_length=250 , null=True)
     ingredient_image = models.CharField(max_length=500 , null=True)
     delivery_guide   = models.CharField(max_length=250 , null=True)
-    stock            = models.IntegerField()
+    stock            = models.IntegerField(null=True)
     created_at       = models.DateTimeField(auto_now_add=True)
     updated_at       = models.DateTimeField(auto_now=True)
     category         = models.ManyToManyField('Category', through = 'CategoryProduct')

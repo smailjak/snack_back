@@ -24,13 +24,9 @@ class ProductView(View):
 
             product_info = (Product.
                             objects.
-                            filter(Q(category_name = category_name)).
+                            filter(name__icontains = category_name).
                             order_by(sort_by).
-                            values('id',
-                                   'name',
-                                   'image',
-                                   'retail_price',
-                                  )[offset:offset+limit])
+                            values()[offset:offset+limit])
 
             return JsonResponse({"data":list(product_info)} , status=200)
 
@@ -67,10 +63,10 @@ class SearchView(View):
             if len(keyword) > 0:
                 product_data = (Product.
                                 objects.
-                                filter(name = keyword).
+                                filter(name__icontains = keyword).
                                 values())
 
-                return JsonResponse({"data" : product_data},status=200)
+                return JsonResponse({"data" : list(product_data)},status=200)
 
         except ValueError:
             return HttpResponse(status=400)
