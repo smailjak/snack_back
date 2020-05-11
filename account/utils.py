@@ -14,12 +14,12 @@ def login_check(func):
                                       SECRET_KEY['secret'],
                                       algorithms = ALGORITHM)
 
-            account      = User.objects.get(id = payload["id"])
+            account      = Account.objects.get(id = payload["id"])
             request.user = account
 
             return func(self, request, *args, **kwargs)
 
-        except User.DoesNotExist:
+        except Account.DoesNotExist:
             return JsonResponse({'message': 'INVALID_USER'}, status=401)
 
         except KeyError:
