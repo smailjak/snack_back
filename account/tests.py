@@ -12,11 +12,11 @@ from .views import (SignUpView,
 class TestSignUp(TestCase):
     def setUp(self):
         Account.objects.create(
-            name = 'name-setup',
-            user_id = 'user-setup',
+            name     = 'name-setup',
+            user_id  = 'user-setup',
             password = 'pass-setup',
-            email = 'email-setup',
-            phone = 'phone-setup'
+            email    = 'email-setup',
+            phone    = 'phone-setup'
         )
     
     def tearDown(self):
@@ -28,11 +28,11 @@ class TestSignUp(TestCase):
         '''
         client = Client()
         payload = {
-            'name': 'name-test',
-            'user_id': 'user-test',
-            'password': 'pass-test',
-            'email': 'email-test',
-            'phone': 'phone-test'
+            'name'     : 'name-test',
+            'user_id'  : 'user-test',
+            'password' : 'pass-test',
+            'email'    : 'email-test',
+            'phone'    : 'phone-test'
         }
 
         response = client.post('/account/sign-up', data=json.dumps(payload), content_type = "application/json")
@@ -43,7 +43,7 @@ class TestSignUp(TestCase):
         '''
         회원 가입 시 이메일 중복 테스트
         '''
-        client = Client()
+        client  = Client()
         payload = {
             'name': 'name-test',
             'user_id': 'user-setup'
@@ -72,11 +72,11 @@ class TestSignUp(TestCase):
 class TestSignIn(TestCase):
     def setUp(self):
         Account.objects.create(
-            name = 'name-setup',
-            user_id = 'user-setup',
+            name     = 'name-setup',
+            user_id  = 'user-setup',
             password = 'pass-setup',
-            email = 'email-setup',
-            phone = 'phone-setup'
+            email    = 'email-setup',
+            phone    = 'phone-setup'
         )
     
     def tearDown(self):
@@ -88,11 +88,11 @@ class TestSignIn(TestCase):
         '''
         client = Client()
         payload = {
-            'name': 'name-setup',
-            'user_id': 'user-setup',
-            'password': 'pass-setup',
-            'email': 'email-setup',
-            'phone': 'phone-setup'
+            'name'     : 'name-setup',
+            'user_id'  : 'user-setup',
+            'password' : 'pass-setup',
+            'email'    : 'email-setup',
+            'phone'    : 'phone-setup'
         }
 
         response = client.post('/account/sign-in', data=json.dumps(payload), content_type = "application/json")
@@ -118,7 +118,7 @@ class TestSignIn(TestCase):
         '''
         로그인 시 키 유효성 테스트
         '''
-        client = Client()
+        client  = Client()
         payload = {
         }
 
