@@ -1,3 +1,4 @@
+import json
 import requests
 from bs4 import BeautifulSoup
 
@@ -51,11 +52,17 @@ def return_all():
             for tr in trs:
                 tds = tr.find_all('td')
                 for product in tds:
-                    item = {'item_name': product.find('p', {'class': 'item-name'}).text, 'next': 'next'}
+                    item = {
+                        'img': product.find('img', {'class': 'MS_prod_img_s'}),
+                        'item_name': product.find('p', {'class': 'item-name'}).text,
+                        'price-strike': product.find('span', {'class': 'price-strike'}),
+                        'price-red': product.find('span', {'class': 'price-red'})
+                    }
                     products_in_one_category.append(item)
         result_by_category_url = {category_url: products_in_one_category}
-        print(f'number_in_one_category: {len(products_in_one_category)}')
+
         result.update(result_by_category_url)
+
     return result
 
 print(return_all())
