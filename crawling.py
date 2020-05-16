@@ -1,4 +1,6 @@
+import csv
 import json
+
 import requests
 from bs4 import BeautifulSoup
 
@@ -52,13 +54,31 @@ def return_all():
             for tr in trs:
                 tds = tr.find_all('td')
                 for product in tds:
+                    price_strike = None if product.find('span', {'class': 'price-strike'}) is None else product.find('span', {'class': 'price-strike'}).text.replace("\n", "").replace("\\", "")
+                    price_red = None if product.find('span', {'class': 'price-red'}) is None else product.find('span', {'class': 'price-red'}).text.replace("\\", "")
+                    item_price = None if price_strike or price_red is not None else product.find('p', {'class': 'item-price'}).find('span').text.replace("\\", "")
                     item = {
-                        'img': product.find('img', {'class': 'MS_prod_img_s'}),
+                        'img': product.find('img', {'class': 'MS_prod_img_s'}).get('src'),
                         'item_name': product.find('p', {'class': 'item-name'}).text,
-                        'price-strike': product.find('span', {'class': 'price-strike'}),
-                        'price-red': product.find('span', {'class': 'price-red'})
+                        'price-strike': price_strike,
+                        'price-red': price_red,
+                        'item-price': item_price
                     }
                     products_in_one_category.append(item)
+    
+        f = csv.writer(open(f"{category_url[-5:]}.csv", "w"))
+
+        f.writerow(['img', 'item_name', 'price-strike', 'price-red', 'item-price'])
+
+        for product in products_in_one_category:
+            f.writerow([product["img"],
+                        product["item_name"],
+                        product["price-strike"],
+                        product["price-red"],
+                        product["item-price"]])
+
+
+
         result_by_category_url = {category_url: products_in_one_category}
 
         result.update(result_by_category_url)
