@@ -3,6 +3,7 @@
 # Edit at https://www.gitignore.io/?templates=venv,linux,macos,django,direnv,python,visualstudiocode
 
 ### direnv ###
+
 .direnv
 .envrc
 .idea/
@@ -240,5 +241,8 @@ pip-selfcheck.json
 
 # End of https://www.gitignore.io/api/venv,linux,macos,django,direnv,python,visualstudiocode
 
+# python.py
+text.py
+tokens.py
 # settings
 my_settings.py

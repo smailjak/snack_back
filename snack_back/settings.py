@@ -11,7 +11,7 @@ https://docs.djangoproject.com/en/3.0/ref/settings/
 """
 
 import os
-from .my_settings import DATABASES , SECRET_KEY
+from .my_settings import DATABASES , SECRET_KEY , EMAIL
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -139,4 +139,13 @@ CORS_ALLOW_HEADERS = (
     'x-csrftoken',
     'x-requested-with',
 )
+
+# EMAIL
+EMAIL_BACKEND       = EMAIL['EMAIL_BACKEND']
+EMAIL_USE_TLS       = EMAIL['EMAIL_USE_TLS']
+EMAIL_PORT          = EMAIL['EMAIL_PORT']
+EMAIL_HOST          = EMAIL['EMAIL_HOST']
+EMAIL_HOST_USER     = EMAIL['EMAIL_HOST_USER']
+EMAIL_HOST_PASSWORD = EMAIL['EMAIL_HOST_PASSWORD']
+SERVER_EMAIL        = EMAIL['SERVER_EMAIL']
 

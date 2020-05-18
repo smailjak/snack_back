@@ -3,7 +3,7 @@ import requests
 
 import json
 
-
+from django.shortcuts       import redirect
 from django.views           import View
 from django.http            import HttpResponse, JsonResponse
 
@@ -12,13 +12,29 @@ from django.core.exceptions import ValidationError
 
 from .models                import Account
 from .utils                 import login_check
-from snack_back.my_settings import SECRET_KEY , ALGORITHM
+from snack_back.my_settings import (SECRET_KEY ,
+                                    ALGORITHM ,
+                                    EMAIL)
+
+from django.contrib.sites.shortcuts import get_current_site
+from django.core.mail               import EmailMessage
+from django.utils.http              import urlsafe_base64_encode , urlsafe_base64_decode
+from django.utils.encoding          import force_text , force_bytes
+from .text                          import message
+from .tokens                        import account_activation_token
+
 
 class SignUpView(View):
+
+    def invalid_phone(self, phone):
+        if re.match(r"^\d{3}?\d{4}?\d{4}$", phone):
+            return False
+        return True
+
     def post(self, request):
         data = json.loads(request.body)
         try:
-            
+
             if Account.objects.filter(user_id = data['user_id']).exists():
                 return HttpResponse(status=400)
 
@@ -27,25 +43,40 @@ class SignUpView(View):
             if Account.objects.filter(email = data['email']).exists():
                 return HttpResponse(status=400)
 
+            if self.invalid_phone(data['phone']):
+                return HttpResponse(status=400)
+
             if len(data['password']) < 8:
                 return JsonResponse({"message": "PASSWORD_SHORT"}, status=400)
 
-            Account(
-                name     = data['name'],
-                user_id  = data['user_id'],
-                password = data['password'],
-                email    = data['email'],
-                phone    = data['phone']
-            ).save()
+            if password['password'] != password['password2']:
+                return HttpResponse(status=400)
+
+            user = Account.objects.create(
+                name      = data['name'],
+                user_id   = data['user_id'],
+                password  = data['password'],
+                email     = data['email'],
+                phone     = data['phone'],
+                is_active = False
+            )
+
+            current_site = get_current_site(request)
+            domain       = current_site.domain
+            uidb64       = urlsafe_base64_encode(force_bytes(user.pk))
+            token        = account_activation_token.make_token(user)
+            message_data = message(domain , uidb64, token)
+
+            mail_title = "이메일을 인증해 주세요 ."
+            mail_to    = data['email']
+            email      = EmailMessage(mail_title , message_data , to=[mail_to])
+            email.send()
 
             token = jwt.encode({'email': data['email']},
                                SECRET_KEY['secret'],
                                algorithm=ALGORITHM).decode()
 
             return JsonResponse({'access': token}, status=200, content_type="application/json")
-
-
-            return HttpResponse(status=200)
 
         except ValidationError:
             return HttpResponse(status=400)
@@ -117,3 +148,24 @@ class ProfileView(View):
 
         except Exception as e:
             return JsonResponse({'message':e} , status=400)
+
+class ActivateView(View):
+    def get(self, request , uidb64, token):
+
+        try:
+            uid  = force_text(urlsafe_base64_decode(uidb64))
+            account = Account.objects.get(pk=uid)
+
+            if account_activation_token.check_token(account, token):
+                account.is_active = True
+                account.save()
+
+                return redirect(EMAIL['REDIRECT_PAGE'])
+
+            return JsonResponse({'message':'auth fail'} , status=200)
+
+        except ValidationError:
+            return JsonResponse({'message' : 'type_error'} , status=400)
+
+        except KeyError:
+            return JsonResponse({'message' : 'invalid_key'} , status=400)
