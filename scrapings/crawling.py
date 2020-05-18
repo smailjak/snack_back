@@ -22,7 +22,7 @@ def get_page_num(category_url):
     while True:
         common_category_url = f'{category_url}&sort=&page={page}'
         res = requests.get(common_category_url, headers=HEADERS)
-        data = BeautifulSoup(res.content.decode('euc-kr', 'replace'), 'html.parser')
+        data = BeautifulSoup(res.content, 'html.parser')
         if data.find('div', {'class': 'items'}) is None:
             break
         page += 1
@@ -45,26 +45,20 @@ def return_all():
         products_in_one_category = []
         for url in urls_in_one_category: 
             res = requests.get(url, headers=HEADERS)
-            data = BeautifulSoup(res.content.decode('euc-kr', 'replace'), 'html.parser')
+            data = BeautifulSoup(res.content, 'html.parser')
 
-            items = data.find('div', {'class': 'items'})
-            tbody = items.find('tbody')
-            trs = tbody.find_all('tr')
-
-            for tr in trs:
-                tds = tr.find_all('td')
-                for product in tds:
-                    price_strike = None if product.find('span', {'class': 'price-strike'}) is None else product.find('span', {'class': 'price-strike'}).text.replace("\n", "").replace("\\", "")
-                    price_red = None if product.find('span', {'class': 'price-red'}) is None else product.find('span', {'class': 'price-red'}).text.replace("\\", "")
-                    item_price = None if price_strike or price_red is not None else product.find('p', {'class': 'item-price'}).find('span').text.replace("\\", "")
-                    item = {
-                        'img': product.find('img', {'class': 'MS_prod_img_s'}).get('src'),
-                        'item_name': product.find('p', {'class': 'item-name'}).text,
-                        'price-strike': price_strike,
-                        'price-red': price_red,
-                        'item-price': item_price
-                    }
-                    products_in_one_category.append(item)
+            for product in data.select("dl.item"):
+                price_strike = None if product.find('span', {'class': 'price-strike'}) is None else product.find('span', {'class': 'price-strike'}).text.replace("\n", "").replace("\\", "")
+                price_red = None if product.find('span', {'class': 'price-red'}) is None else product.find('span', {'class': 'price-red'}).text.replace("\\", "")
+                item_price = None if price_strike or price_red is not None else product.find('p', {'class': 'item-price'}).find('span').text.replace("\\", "")
+                item = {
+                    'img': product.find('img', {'class': 'MS_prod_img_s'}).get('src'),
+                    'item_name': product.find('p', {'class': 'item-name'}).text,
+                    'price-strike': price_strike,
+                    'price-red': price_red,
+                    'item-price': item_price
+                }
+                products_in_one_category.append(item)
     
         f = csv.writer(open(f"{category_url[-5:]}.csv", "w"))
 
