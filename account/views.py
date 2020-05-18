@@ -3,7 +3,6 @@ import requests
 
 import json
 
-from django.shortcuts       import redirect
 from django.views           import View
 from django.http            import HttpResponse, JsonResponse
 
@@ -16,6 +15,7 @@ from snack_back.my_settings import (SECRET_KEY ,
                                     ALGORITHM ,
                                     EMAIL)
 
+from django.shortcuts               import redirect
 from django.contrib.sites.shortcuts import get_current_site
 from django.core.mail               import EmailMessage
 from django.utils.http              import urlsafe_base64_encode , urlsafe_base64_decode
@@ -79,10 +79,13 @@ class SignUpView(View):
             return JsonResponse({'access': token}, status=200, content_type="application/json")
 
         except ValidationError:
-            return HttpResponse(status=400)
+            return JsonResponse({'message' : 'VALIDATION_ERROR'},status=400)
 
         except KeyError:
             return JsonResponse({'message': 'INVALID_KEY'}, status = 400)
+
+        except TypeError:
+            return JsonResponse({'message' : 'INVALID_TYPE'} , status=400)
 
 class SignInView(View):
     def post(self, request):
