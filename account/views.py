@@ -49,7 +49,7 @@ class SignUpView(View):
             if len(data['password']) < 8:
                 return JsonResponse({"message": "PASSWORD_SHORT"}, status=400)
 
-            if password['password'] != password['password2']:
+            if data['password'] != data['password2']:
                 return HttpResponse(status=400)
 
             user = Account.objects.create(
