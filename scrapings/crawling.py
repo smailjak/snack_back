@@ -15,19 +15,18 @@ CATEGORY_URLS = [
 ]
 
 USER_AGENT = 'Mozilla/5.0'
-HEADERS = {'User-Agent': USER_AGENT}
+HEADERS    = {'User-Agent': USER_AGENT}
 
 def get_page_num(category_url):
-    page = 1
+    page = 4
     while True:
         common_category_url = f'{category_url}&sort=&page={page}'
-        res = requests.get(common_category_url, headers=HEADERS)
+        res  = requests.get(common_category_url, headers=HEADERS)
         data = BeautifulSoup(res.content, 'html.parser')
         if data.find('div', {'class': 'items'}) is None:
             break
         page += 1
     return page - 1
-
 
 def get_urls_in_one_category(category_url):
     urls_in_one_category = []
@@ -41,22 +40,24 @@ def get_urls_in_one_category(category_url):
 def return_all():
     result = {}
     for category_url in CATEGORY_URLS:
-        urls_in_one_category = get_urls_in_one_category(category_url)
+        urls_in_one_category     = get_urls_in_one_category(category_url)
         products_in_one_category = []
+
         for url in urls_in_one_category: 
-            res = requests.get(url, headers=HEADERS)
+            res  = requests.get(url, headers=HEADERS)
             data = BeautifulSoup(res.content, 'html.parser')
 
             for product in data.select("dl.item"):
                 price_strike = None if product.find('span', {'class': 'price-strike'}) is None else product.find('span', {'class': 'price-strike'}).text.replace("\n", "").replace("\\", "")
                 price_red = None if product.find('span', {'class': 'price-red'}) is None else product.find('span', {'class': 'price-red'}).text.replace("\\", "")
                 item_price = None if price_strike or price_red is not None else product.find('p', {'class': 'item-price'}).find('span').text.replace("\\", "")
+
                 item = {
-                    'img': product.find('img', {'class': 'MS_prod_img_s'}).get('src'),
-                    'item_name': product.find('p', {'class': 'item-name'}).text,
-                    'price-strike': price_strike,
-                    'price-red': price_red,
-                    'item-price': item_price
+                    'img'          : product.find('img', {'class': 'MS_prod_img_s'}).get('src'),
+                    'item_name'    : product.find('p', {'class': 'item-name'}).text,
+                    'price-strike' : price_strike,
+                    'price-red'    : price_red,
+                    'item-price'   : item_price
                 }
                 products_in_one_category.append(item)
     
