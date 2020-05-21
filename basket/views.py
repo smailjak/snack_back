@@ -77,7 +77,7 @@ class BasketView(View):
     @login_check
     def delete(self, request):
         data   = json.loads(request.body)
-        basket = basket.objects.filter(user_id=request.user.id , product_id=data['product_id'])
+        basket = Basket.objects.filter(user_id=request.user.id , product_id=data['product_id'])
 
         if basket.exists():
             basket.get().delete()
@@ -96,18 +96,16 @@ class WishProductView(View):
             if WishProduct.objects.filter(product_id = data['product_id']).exists():
                 return JsonResponse({"message" : "이미추가된 아이템"} ,status=400)
 
-                WishProduct(
-                    user_id    = request.account.id,
-                    product_id = data['product_id'],
-                ).save()
 
-                return HttpResponse(status=200)
+            WishProduct(
+                user_id    = request.account.id,
+                product_id = data['product_id'],
+            ).save()
+
+            return HttpResponse(status=200)
 
         except:
             return JsonResponse({"message": "doesnot_product"}, status=400)
-
-        except KeyError:
-            return JsonResponse({"message" : "invalid_key"} , status=400)
 
     @login_check
     def get(self , request):
