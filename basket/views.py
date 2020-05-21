@@ -90,7 +90,6 @@ class WishProductView(View):
     @login_check
     def post(self , request):
         data    = json.loads(request.body)
-        product = Product.objects.filter(id=data['product_id'])
 
         try :
             if WishProduct.objects.filter(product_id = data['product_id']).exists():
@@ -104,7 +103,7 @@ class WishProductView(View):
 
             return HttpResponse(status=200)
 
-        except:
+        except Product.DoesNotExist:
             return JsonResponse({"message": "doesnot_product"}, status=400)
 
     @login_check
