@@ -4,89 +4,33 @@ import requests
 import json
 import re
 
+
 from django.views           import View
 from django.http            import HttpResponse, JsonResponse
 
-from django.core.validators import validate_email
-from django.core.exceptions import ValidationError
-
 from .models                import Account
 from .utils                 import login_check
-from snack_back.my_settings import (SECRET_KEY ,
-                                    ALGORITHM ,
-                                    EMAIL)
-
-from django.shortcuts               import redirect
-from django.contrib.sites.shortcuts import get_current_site
-from django.core.mail               import EmailMessage
-from django.utils.http              import urlsafe_base64_encode , urlsafe_base64_decode
-from django.utils.encoding          import force_text , force_bytes
-from .text                          import message
-from .tokens                        import account_activation_token
-
+from snack_back.my_settings import SECRET_KEY , ALGORITHM
 
 class SignUpView(View):
-
-    def invalid_phone(self, phone):
-        if re.match(r"^\d{3}?\d{4}?\d{4}$", phone):
-            return False
-        return True
-
     def post(self, request):
         data = json.loads(request.body)
         try:
-
-            if Account.objects.filter(user_id = data['user_id']).exists():
+            if Account.objects.filter(user_id = data['user_id']).exists():  # 존재하는 유저아이디인지 확인
                 return HttpResponse(status=400)
 
-            validate_email(data['email'])
+            Account(
+                name     = data['name'],
+                user_id  = data['user_id'],
+                password = data['password'],
+                email    = data['email'],
+                phone    = data['phone']
+            ).save()
 
-            if Account.objects.filter(email = data['email']).exists():
-                return HttpResponse(status=400)
-
-            if self.invalid_phone(data['phone']):
-                return HttpResponse(status=400)
-
-            if len(data['password']) < 8:
-                return JsonResponse({"message": "PASSWORD_SHORT"}, status=400)
-
-            if data['password'] != data['password2']:
-                return HttpResponse(status=400)
-
-            user = Account.objects.create(
-                name      = data['name'],
-                user_id   = data['user_id'],
-                password  = data['password'],
-                email     = data['email'],
-                phone     = data['phone'],
-                is_active = False
-            )
-
-            current_site = get_current_site(request)
-            domain       = current_site.domain
-            uidb64       = urlsafe_base64_encode(force_bytes(user.pk))
-            token        = account_activation_token.make_token(user)
-            message_data = message(domain , uidb64, token)
-
-            mail_title = "이메일을 인증해 주세요 ."
-            mail_to    = data['email']
-            email      = EmailMessage(mail_title , message_data , to=[mail_to])
-            email.send()
-
-            token = jwt.encode({'email': data['email']},
-                               SECRET_KEY['secret'],
-                               algorithm=ALGORITHM).decode()
-
-            return JsonResponse({'access': token}, status=200, content_type="application/json")
-
-        except ValidationError:
-            return JsonResponse({'message' : 'VALIDATION_ERROR'},status=400)
+            return HttpResponse(status=200) # 회원가입 완료
 
         except KeyError:
             return JsonResponse({'message': 'INVALID_KEY'}, status = 400)
-
-        except TypeError:
-            return JsonResponse({'message' : 'INVALID_TYPE'} , status=400)
 
 class SignInView(View):
     def post(self, request):
@@ -97,9 +41,7 @@ class SignInView(View):
                 account = Account.objects.get(user_id = data['user_id'])
 
                 if account.password == data['password']:
-                    token = jwt.encode({"user":account.id} ,
-                                       SECRET_KEY['secret'] ,
-                                       algorithm = ALGORITHM)
+                    token = jwt.encode({"user":account.id} , SECRET_KEY['secret'] , algorithm = ALGORITHM)
 
                     return JsonResponse({"token":token.decode('utf-8')} , status=200)
 
@@ -109,9 +51,6 @@ class SignInView(View):
 
         except KeyError:
             return JsonResponse({'message': 'INVALID_KEYS'}, status=400)
-
-        except Account.DoesNotExist:
-            return JsonResponse({'message' : 'INVALID_ACCOUNT'} , status=400)
 
 class ProfileView(View):
     @login_check
