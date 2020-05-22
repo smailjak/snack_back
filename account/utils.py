@@ -9,13 +9,13 @@ def login_check(func):
     def wrapper(self, request, *args, **kwargs):
 
         try:
-            auth_token   = request.headers.get('Authorization', None)
-            payload      = jwt.decode(auth_token,
+            auth_token      = request.headers.get('Authorization', None)
+            payload         = jwt.decode(auth_token,
                                       SECRET_KEY['secret'],
                                       algorithms = ALGORITHM)
 
-            account      = Account.objects.get(id = payload["id"])
-            request.user = account
+            account         = Account.objects.get(email = payload["email"])
+            request.account = account
 
             return func(self, request, *args, **kwargs)
 
@@ -23,7 +23,7 @@ def login_check(func):
             return JsonResponse({'message': 'INVALID_USER'}, status=401)
 
         except KeyError:
-            return JsonResponse({'message': 'INVALID'}, status=400)
+            return JsonResponse({'message': 'INVALID_KEY'}, status=400)
 
         except jwt.DecodeError:
             return JsonResponse({'message': 'INVALID TOKEN'}, status=401)

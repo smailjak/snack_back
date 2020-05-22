@@ -1,13 +1,17 @@
 import json
+from django.views     import View
+from django.http      import HttpResponse, JsonResponse
+from django.db.models import (F ,
+                              ExpressionWrapper,
+                              DecimalField)
 
-from django.views           import View
-from django.http            import HttpResponse, JsonResponse
-
-from .models                import Account
-from product.models         import Product
-from basket.models          import Basket , WishProduct
-from account.utils          import login_check
-
+from account.models   import Account
+from product.models   import Product
+from account.utils    import login_check
+from .models          import (Basket ,
+                              WishProduct ,
+                              Order ,
+                              OrderProduct)
 
 class BasketView(View):
     @login_check
@@ -20,18 +24,18 @@ class BasketView(View):
             return JsonResponse({'message': 'OUT_OF_STOCK'}, status=200)
 
         try :
-            if Basket.objects.filter(user_id    = request.user.id ,
+            if Basket.objects.filter(account_id = request.user.id ,
                                      product_id = data['product_id']).exists():
 
                 basket_data = Basket.objects.get(product_id = data['product_id'] ,
-                                                 user_id    = request.user.id)
+                                                 account_id = request.user.id)
 
                 basket_data.update(quantity=data['quantity'])
                 basket_data.save()
 
             else:
                 Basket(
-                    user_id    = request.account.id,
+                    account_id = request.account.id,
                     product_id = data['product_id'],
                     quantity   = data['quantity']
                 ).save()
@@ -51,7 +55,7 @@ class BasketView(View):
     def get(self, request):
 
         try:
-            basket_data = Basket.objects.filter(user_id=request.user_id).select_related('product')
+            basket_data = Basket.objects.filter(account_id = request.user_id).select_related('product')
 
             data = []
 
@@ -77,7 +81,7 @@ class BasketView(View):
     @login_check
     def delete(self, request):
         data   = json.loads(request.body)
-        basket = Basket.objects.filter(user_id=request.user.id , product_id=data['product_id'])
+        basket = Basket.objects.filter(account_id = request.user.id , product_id=data['product_id'])
 
         if basket.exists():
             basket.get().delete()
@@ -97,7 +101,7 @@ class WishProductView(View):
 
 
             WishProduct(
-                user_id    = request.account.id,
+                account_id = request.account.id,
                 product_id = data['product_id'],
             ).save()
 
@@ -110,7 +114,7 @@ class WishProductView(View):
     def get(self , request):
         try :
 
-            wish_product = WishProduct.objects.filter(user_id = request.user.id).select_related('product')
+            wish_product = WishProduct.objects.filter(account_id = request.user.id).select_related('product')
             data = []
 
             for wish in wish_product:
@@ -132,7 +136,7 @@ class WishProductView(View):
     @login_check
     def delete(self, request):
         data         = json.loads(request.body)
-        wish_product = WishProduct.objects.filter(user_id    = request.user.id ,
+        wish_product = WishProduct.objects.filter(account_id = request.user.id ,
                                                   product_id = data['product_id'])
         try :
 
@@ -146,3 +150,25 @@ class WishProductView(View):
 
         except Product.DoesNotExist:
             return JsonResponse({"message" : "DOESNOT_PRODUCT"} , status=400)
+
+class OrderView(View):
+    @login_check
+    def post(self, request):
+        data    = json.loads(request.body)
+        product = Product.objects.filter(id = data['product_id'] , is_in_stock=True)
+        print(request.account.id)
+
+        if not product.exists():
+            return JsonResponse({'message' : 'OUT_OF_STOCK'} , status=400)
+
+    @login_check
+    def get(self , request):
+        saved_order = Order.objects.filter(account_id = request.account.id , is_close = False)
+
+        return
+
+
+    def delete(self , request):
+        return
+
+

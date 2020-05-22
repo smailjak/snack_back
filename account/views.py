@@ -24,8 +24,8 @@ from .text                          import message
 from django.views                   import View
 from django.http                    import HttpResponse, JsonResponse
 
-from snack_back.my_settings         import (SECRET_KEY ,
-                                            ALGORITHM ,
+from snack_back.my_settings         import (SECRET_KEY,
+                                            ALGORITHM,
                                             EMAIL)
 class SignUpView(View):
 
@@ -36,6 +36,7 @@ class SignUpView(View):
 
     def post(self, request):
         data = json.loads(request.body)
+
         try:
 
             if Account.objects.filter(user_id = data['user_id']).exists():
