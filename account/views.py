@@ -4,33 +4,91 @@ import requests
 import json
 import re
 
+from django.contrib.sites.shortcuts import get_current_site
 
-from django.views           import View
-from django.http            import HttpResponse, JsonResponse
+from django.core.validators         import validate_email
+from django.core.exceptions         import ValidationError
+from django.core.mail               import EmailMessage
 
-from .models                import Account
-from .utils                 import login_check
-from snack_back.my_settings import SECRET_KEY , ALGORITHM
+from django.utils.http              import (urlsafe_base64_encode,
+                                            urlsafe_base64_decode)
 
+from django.utils.encoding          import force_bytes, force_text
+from django.shortcuts               import redirect
+
+from .models                        import Account
+from .utils                         import login_check
+from .tokens                        import account_activation_token
+from .text                          import message
+
+from django.views                   import View
+from django.http                    import HttpResponse, JsonResponse
+
+from snack_back.my_settings         import (SECRET_KEY ,
+                                            ALGORITHM ,
+                                            EMAIL)
 class SignUpView(View):
+
+    def invalid_phone(self, phone):
+        if re.match(r"^\d{3}?\d{4}?\d{4}$", phone):
+            return False
+        return True
+
     def post(self, request):
         data = json.loads(request.body)
         try:
-            if Account.objects.filter(user_id = data['user_id']).exists():  # 존재하는 유저아이디인지 확인
+
+            if Account.objects.filter(user_id = data['user_id']).exists():
                 return HttpResponse(status=400)
 
-            Account(
-                name     = data['name'],
-                user_id  = data['user_id'],
-                password = data['password'],
-                email    = data['email'],
-                phone    = data['phone']
-            ).save()
+            validate_email(data['email'])
 
-            return HttpResponse(status=200) # 회원가입 완료
+            if Account.objects.filter(email = data['email']).exists():
+                return HttpResponse(status=400)
+
+            if self.invalid_phone(data['phone']):
+                return HttpResponse(status=400)
+
+            if len(data['password']) < 8:
+                return JsonResponse({"message": "PASSWORD_SHORT"}, status=400)
+
+            if data['password'] != data['password2']:
+                return HttpResponse(status=400)
+
+            user = Account.objects.create(
+                name      = data['name'],
+                user_id   = data['user_id'],
+                password  = data['password'],
+                email     = data['email'],
+                phone     = data['phone'],
+                is_active = False
+            )
+
+            current_site = get_current_site(request)
+            domain       = current_site.domain
+            uidb64       = urlsafe_base64_encode(force_bytes(user.pk))
+            token        = account_activation_token.make_token(user)
+            message_data = message(domain , uidb64, token)
+
+            mail_title = "이메일을 인증해 주세요 ."
+            mail_to    = data['email']
+            email      = EmailMessage(mail_title , message_data , to=[mail_to])
+            email.send()
+
+            token = jwt.encode({'email': data['email']},
+                               SECRET_KEY['secret'],
+                               algorithm=ALGORITHM).decode()
+
+            return JsonResponse({'access': token}, status=200, content_type="application/json")
+
+        except ValidationError:
+            return JsonResponse({'message' : 'VALIDATION_ERROR'},status=400)
 
         except KeyError:
             return JsonResponse({'message': 'INVALID_KEY'}, status = 400)
+
+        except TypeError:
+            return JsonResponse({'message' : 'INVALID_TYPE'} , status=400)
 
 class SignInView(View):
     def post(self, request):
