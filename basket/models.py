@@ -5,9 +5,9 @@ from product.models         import Product
 
 # Create your models here.
 class Basket(models.Model):
-    user       = models.ForeignKey('account.Account', on_delete = models.SET_NULL,  null=True)
-    product    = models.ForeignKey('product.Product', on_delete = models.CASCADE, null = True)
-    quantity   = models.PositiveSmallIntegerField(null=True ,
+    user         = models.ForeignKey('account.Account', on_delete = models.SET_NULL,  null=True)
+    product      = models.ForeignKey('product.Product', on_delete = models.CASCADE, null = True)
+    quantity     = models.PositiveSmallIntegerField(null=True ,
                                                   default = 1 ,
                                                   validators=[MinValueValidator(1) ,
                                                               MaxValueValidator(30)])
@@ -23,9 +23,12 @@ class Basket(models.Model):
         return self.product.name
 
 class WishProduct(models.Model):
-    user       = models.ForeignKey('account.Account' , on_delete = models.SET_NULL, null= True)
-    product    = models.ForeignKey('product.Product' , on_delete = models.CASCADE, null = True)
-    created_at = models.DateTimeField(auto_now_add = True)
+    user         = models.ForeignKey('account.Account' , on_delete = models.SET_NULL, null= True)
+    product      = models.ForeignKey('product.Product' , on_delete = models.CASCADE, null = True)
+    created_at   = models.DateTimeField(auto_now_add = True)
 
     class Meta:
         db_table = 'wish_products'
+
+
+
