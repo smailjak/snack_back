@@ -6,8 +6,8 @@ from  django.views     import View
 from  django.http      import HttpResponse, JsonResponse
 
 from .models           import (Category,
-                               Product,
-                               CategoryProduct)
+                               Product
+                               )
 
 class CategoryView(View):
     def get(self , request):
@@ -82,7 +82,7 @@ class SearchView(View):
         except ValueError:
             return HttpResponse(status=400)
 
-        except NoneType:
+        except TypeError:
             return HttpResponse(status=400)
 
         except Exception as e:

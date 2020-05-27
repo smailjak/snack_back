@@ -34,6 +34,7 @@ class Order(models.Model):
     account       = models.ForeignKey('account.Account' , on_delete = models.CASCADE , null = True)
     created_at    = models.DateField(auto_now_add = True)
     is_closed     = models.BooleanField(default = False)
+
     class Meta:
         db_table = 'orders'
 
