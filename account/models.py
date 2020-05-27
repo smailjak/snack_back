@@ -10,7 +10,7 @@ class Account(models.Model):
     is_active  = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add = True)
     updated_at = models.DateTimeField(auto_now = True)
-    kakao_id   = models.IntegerField(max_length=250 , null=True)
+    kakao_id   = models.IntegerField(null=True)
 
     def __str__(self):
         return self.name

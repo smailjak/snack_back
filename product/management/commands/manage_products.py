@@ -31,7 +31,9 @@ class Command(BaseCommand):
 
         if options['dump_products']:
             category_names = ['snack', 'gum', 'ramen', 'drink', 'imported_snack']
+            num = 0
             for category_name in category_names:
+                num = num +1
                 dump_file_path = Path(f'scrapings/{category_name}.csv')
                 with open(dump_file_path, newline='') as csvfile:
                     smapreader = csv.reader(csvfile)
@@ -41,7 +43,8 @@ class Command(BaseCommand):
                             name         = row[1],
                             price_strike = row[2],
                             price_red    = row[3],
-                            item_price   = row[4]
+                            item_price   = row[4],
+                            category_id  = num
                         )
 
             self.stdout.write(self.style.SUCCESS('Successfully dumped products by category'))
