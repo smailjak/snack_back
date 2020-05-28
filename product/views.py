@@ -1,18 +1,7 @@
-import jwt, bcrypt, json
-
-from  django.db        import IntegrityError
-from  django.db.models import Count, Q , Sum
 from  django.views     import View
 from  django.http      import HttpResponse, JsonResponse
 
-from .models           import (Category,
-                               Product
-                               )
-
-class CategoryView(View):
-    def get(self , request):
-        data = Category.objects.values()
-        return JsonResponse({"data" : list(data)} , status=200)
+from .models           import Product
 
 class ProductView(View):
     def get(self , request , category_name):
@@ -26,11 +15,7 @@ class ProductView(View):
                             objects.
                             filter(category__name__icontains = category_name).
                             order_by(sort_by).
-                            values("id",
-                                   "image",
-                                   "name",
-                                   "price",
-                                   "retail_price")[offset:offset+limit])
+                            values()[offset:offset+limit])
 
             return JsonResponse({"data":list(product_info)} , status=200)
 
@@ -41,20 +26,14 @@ class ProductView(View):
             return JsonResponse({"message":"INVALID_TYPE"} , status=400)
 
 class ProductDetailView(View):
-    def get(self , request , product_id):
+    def get(self , request ,category_name, product_id):
 
         try:
 
             product_info =(Product.
                            objects.
-                           filter(id=product_id).
-                           values("id",
-                                 "name",
-                                 "image",
-                                 "price",
-                                 "retail_price",
-                                 "ingredient_image",
-                                 "stock"))
+                           filter(id=product_id , category__name__icontains = category_name).
+                           values())
 
             return JsonResponse({"data" : list(product_info)} , status=200)
 
@@ -69,13 +48,12 @@ class ProductDetailView(View):
 
 class SearchView(View):
     def get(self , request):
-        keyword = request.GET.get("keyword" , None)
+        print(123123)
+        keyword = request.GET.get('keyword' , None)
+        print(keyword)
         try :
-            if len(keyword) > 0:
-                product_data = (Product.
-                                objects.
-                                filter(name__icontains = keyword).
-                                values())
+            if len(keyword) > 0 :
+                product_data = Product.objects.filter(name__icontains = keyword).values()
 
                 return JsonResponse({"data" : list(product_data)},status=200)
 
